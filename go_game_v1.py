@@ -20,16 +20,6 @@ def initalize():
             gs[i].append('-')
     return gs
 
-## Provides an ascii display of the Go board
-def printboard(gs):
-    global boardsize
-    for row in gs:
-        rowprint = ''
-        for element in row:
-            rowprint += element
-            rowprint += ' '
-        print(rowprint)
-
 ## Returns a list of the board positions surrounding the
 ## passed group.
 def gperm(group):
@@ -308,113 +298,63 @@ def addpoint(xy,xoro):
     if new == 1:
         groups.append([xy])
 
-## Lets the player select a move.
-def selectmove(xoro):
-    global boardsize
-    global game_state_future
-    hold = 1
-    while hold == 1:
-        minihold = 1
-        while minihold == 1:
-            minihold = 0
-            ## This try...except ensures that the user
-            ## inputs only numbers
-            error = 0
-            try:
-                x = int(input('x: '))
-            except ValueError:
-                error = 1
-            try:
-                y = int(input('y: '))
-            except ValueError:
-                error = 1
-            if error == 1:
-                minihold = 1
-                print('invalid')
-        ## Ensures that the input is on the board
-        if (x >= boardsize) | (x < 0) | (y >= boardsize) | (y < 0):
-            print('invalid')
-        elif game_state_curren[y][x] != '-':
-            print('invalid')
-        else:
-            hold = 0
-    ## Places the piece on the 'future' board, the board
+def turn(xy, xoro):
+	global boardsize
+	global game_state_future
+	x = xy[0]
+	y = xy[1]
+	hold = 1
+	while hold == 1:
+		## Ensures that the input is on the board
+		if (x >= boardsize) | (x < 0) | (y >= boardsize) | (y < 0):
+			print('invalid')
+		elif game_state_curren[y][x] != '-':
+			print('invalid - 1')
+		else:
+			hold = 0
+	## Places the piece on the 'future' board, the board
     ## used to test if a move is valid
-    if xoro == 'o':
-        game_state_future[y][x] = 'o'
-    else:
-        game_state_future[y][x] = 'x'
-    return [x,y]
-
-## The 'turn,' in which a player makes a move,
-## the captures caused by that piece are made,
-## the validity of the move is checked, and
-## the endgame status is checked.
-def turn():
-    global xoro
-    global notxoro
-    global player1_pass
-    global player2_pass
-    global gameover
-    hold = 1
-    while hold == 1:
-        print()
-        print('place for ' + xoro)
-        ## By calling selectmove(), the player
-        ## is given the option of whether to place
-        ## a piece or to pass, and where to place
-        ## that piece.
-        xy = selectmove(xoro)
-        if xy == 'pass':
-            if xoro == 'o':
-                player1_pass = 1
-            else:
-                player2_pass = 1
-            hold = 0
-        ## If the player doesn't pass...
-        else:
-            player1_pass = 0
-            player2_pass = 0
-            ## The new piece is added to its group,
-            ## or a new group is created for it.
-            addpoint(xy,xoro)
-            ## Groups that have been connected by
-            ## the this placement are joined together
-            concat(xoro)
-            minihold = 1
-            ## Edited is a value used to check
-            ## whether any capture is made.  capture()
-            ## is called as many times as until no pieces
-            ## are capture (until edited does not change
-            ## to 1)
-            edited = 0
-            while minihold == 1:
-                restore_o = []
-                restore_x = []
-                capture(xoro)
-                capture(notxoro)
-                if edited == 0:
-                    minihold = 0
-                    edited = 0
-                else:
-                    edited = 0
-            ## Checks to see if the move, given all the
-            ## captures it causes, would return the board
-            ## to a previous game state.
-            if goodmove() == 1:
-                hold = 0
-            ## If the move is invalid, the captured groups need
-            ## to be returned to the board, so we use
-            ## the groups stored in the restore lists to
-            ## restore the o_ and x_groups lists.
-            else:
-                print('invalid move - that returns to board to a previous state')
-                for group in restore_o:
-                    o_groups.append(group)
-                for group in restore_x:
-                    x_groups.append(group)
-    if (player1_pass == 1) & (player2_pass == 1):
-        gameover = 1
+	if xoro == 'o':
+		game_state_future[y][x] = 'o'
+	else:
+		game_state_future[y][x] = 'x'
+	## The new piece is added to its group,
+    ## or a new group is created for it.
+	addpoint(xy,xoro)
+	## Groups that have been connected by
+	## the this placement are joined together
+	concat(xoro)
+	minihold = 1
+	## Edited is a value used to check
+	## whether any capture is made.  capture()
+	## is called as many times as until no pieces
+	## are capture (until edited does not change
+	## to 1)
+	edited = 0
+	while minihold == 1:
+		restore_o = []
+		restore_x = []
+		capture(xoro)
+		capture(notxoro)
+		if edited == 0:
+			minihold = 0
+			edited = 0
+		else:
+			edited = 0
+	## Checks to see if the move, given all the
+	## captures it causes, would return the board
+	## to a previous game state.
+	if goodmove() == 1:
+		hold = 0
+	## If the move is invalid, the captured groups need
+	## to be returned to the board, so we use
+	## the groups stored in the restore lists to
+	## restore the o_ and x_groups lists.
+	else:
+		for group in restore_o:
+			o_groups.append(group)
+		for group in restore_x:
+			x_groups.append(group)
 
 ## Called to start a game
 def main():
@@ -472,27 +412,15 @@ def main():
         ## Set it as o-player's turn
         xoro = 'o'
         notxoro = 'x'
-        print()
-        printboard(game_state_curren)
-
-        turn()
+        turn([1,1], xoro)
         if gameover == 1:
             break
         ## Sets it as x-player's turn
         xoro = 'x'
         notxoro = 'o'
-        print()
-        printboard(game_state_curren)
-        turn()
+        turn([0,0], xoro)
     ## Counts the score of both players
     count()
-    print()
-    print('final board:')
-    print()
-    printboard(game_state_curren)
-    print()
-    print('o points: ',str(o_points))
-    print('x points: ',str(x_points))
     ## Determines the winner
     if o_points > x_points:
         print('o wins')
@@ -516,18 +444,3 @@ while gameon == 1:
             hold = 0
         else:
             print('invalid')
-
-# TODO
-# take turn function
-# give x, y coordinate
-# return done, score
-# can return -1 for invalid move if needed
-
-# current board function
-# return 2d array of current board
-
-# valid moves function
-# retun 2d array of valid moves
-
-# function to start new game
-
