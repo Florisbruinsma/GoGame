@@ -504,6 +504,7 @@ def main():
 ## Finally something that is not a function!
 ## This while loop will start new games for as
 ## long as the user choses to.
+initalize()
 while gameon == 1:
     main()
     hold = 1
