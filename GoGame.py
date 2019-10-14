@@ -5,8 +5,11 @@ class GoGame:
         self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
         self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
         self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
-        self.captures = [0,0,0]#amount of captured stones
+        self.players = [0,1,2]# neutral, p1, p2
+        self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
         self.stones = [0,0,0]#amount of stones on the board fo player
+        self.scores = [0,0,0]
+        self.groups = [],[],[]
         self.currentTurn = 0
 
     def printBoard(self, board):
@@ -75,7 +78,7 @@ class GoGame:
             check the neighbours of a coordinate
         Parameters
         ----
-            coord : list of tupples, coord is used as (row,col)
+            coord : tupple, coord is used as (row,col)
         Returns
         ----
             return a list with [top,right,down,left] neighbour with value 0,1,2 or 3 with 3 being oob
@@ -166,6 +169,25 @@ class GoGame:
         for coord in chain:
             self.currentBoard[coord] = 0
 
+    def countScore(self):
+        """
+            counts the total score per player for existing groups and captured stones
+        Parameters
+        ----
+            None
+        Returns
+        ----
+            the scores of all players
+        """
+        for player in self.players:
+            total_amount = 0
+            for chain in self.groups[player]:
+                total_amount += len(chain)
+            total_amount -= self.captures[player]
+            self.scores[player] = total_amount
+
+        return self.scores
+
     def resolveTurn(self,player):
         """
             resolves everything that happens after a stone is placed. Like stone captures, and tries to find the current groups, for the score
@@ -179,7 +201,7 @@ class GoGame:
         # assign every space on the board to a chain
         capture = False
         chains = [],[],[]
-        groups = [],[],[]
+        self.groups = [],[],[]
         first_player = 1 if (player==1) else 2#which player played this turn, so captures can be checked first for the oponent
         second_player = 2 if (player==1) else 1
         self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)
@@ -192,27 +214,38 @@ class GoGame:
         for chain in chains[second_player]:
             if(len(self.getLiberties(chain)) == 0):
                 self.captures[second_player] += len(chain)
-                self.stones[first_player] -= len(chain)
+                self.stones[second_player] -= len(chain)
                 self.removeStones(chain)
                 capture = True
         for chain in chains[first_player]:
             if(len(self.getLiberties(chain)) == 0):
                 self.captures[first_player] += len(chain)
-                self.stones[second_player] -= len(chain)
+                self.stones[first_player] -= len(chain)
                 self.removeStones(chain)
                 capture = True
         if capture:
             self.resolveTurn(player)
             return
+        #add some of the neutral chains to player groups
+        self.groups[1].extend(chains[1])
+        self.groups[2].extend(chains[2])
+        for chain in chains[0]:
+            connection = []
+            for coord in chain:
+                connection.extend(self.checkNeighbours(coord))
+            if (not(2 in connection) and 1 in connection):
+                self.groups[1].append(chain)
+            elif (not(1 in connection) and 2 in connection):
+                self.groups[2].append(chain)
+            else:
+                self.groups[0].append(chain)
 
-
-        # after all chain captures are done try to make groups, by assigning the neutral chains to a player if all of their liberties are of that player
-        # use the groups as score
 
 
 go = GoGame(5)
 go.takeTurn((2,1),2)
 go.takeTurn((0,0),2)
+go.takeTurn((0,1),2)
 go.takeTurn((1,1),1)
 go.takeTurn((3,1),1)
 go.takeTurn((2,0),1)
@@ -220,8 +253,9 @@ go.takeTurn((2,2),1)
 go.takeTurn((2,3),1)
 go.takeTurn((2,4),1)
 go.printBoard(go.currentBoard)
+print(go.countScore())
 # x = go.resolveTurn((0,0),0,[])
 
 # also create non groups
-
+# add pass as an option for a turn
 # if all adjacent intersections of a neutral chain belong to one player or are neutral, the chain is theirs
