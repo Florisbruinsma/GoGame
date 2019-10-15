@@ -1,4 +1,4 @@
-# go_game
+# GoGame
 Api for the game go
 # instructions
 Create and object to initialise the game.
