@@ -11,7 +11,7 @@ gamma = 0.95                    # Discounting rate
 epsilon = 1.0                   # Exploration rate
 max_epsilon = 1.0               # Exploration probability at start
 min_epsilon = 0.01              # Minimum exploration probability 
-decay_rate = 0.005              # Exponential decay rate for exploration prob
+decay_rate = 0.00005              # Exponential decay rate for exploration prob
 
 action_size = BOARDSIZE*BOARDSIZE           #because you can do a potential action on every space of the board
 state_size = action_size**3                 #for neutral player 1 or player 2
@@ -44,11 +44,12 @@ for episode in range(total_episodes):
 
         # Take the action and observe the result after the oponent has also taken a turn
         # new_state, score, done = goGame.takeTurn(action,1)
-        goGame.takeTurn(action,1)
+        new_state, score, done = goGame.takeTurn(action,1)
 
-        new_state, score, done = goGame.takeTurn(goGame.getRandomMove(2),2)#take a random turn for player 2
+        # new_state, score, done = goGame.takeTurn(goGame.getRandomMove(2),2)#take a random turn for player 2
+        goGame.takeTurn(goGame.getRandomMove(2),2)
 
-        reward = score[2]-score[1]
+        reward = score[1]-score[2]
         action = goGame.coordToFlatMove(action)
         if(action>=25):
             print("error_action")
