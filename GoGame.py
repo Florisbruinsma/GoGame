@@ -101,7 +101,7 @@ class GoGame:
                 return self.currentBoard, self.scores, False
         if(not self.checkValidMove(coord,player)):
             # print("invalid_move")
-            return self.currentBoard, [0,0,0], False#TODO move this to the controller
+            return self.currentBoard, [0,0,1000], False#TODO move this to the controller
         self.currentBoard[coord] = player
         self.stones[player] += 1
         self.resolveTurn(player)

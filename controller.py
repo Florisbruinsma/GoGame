@@ -2,7 +2,7 @@ from GoGame import GoGame
 import numpy as np
 import random
 BOARDSIZE = 5                   # Size of the dimensions of the board
-total_episodes = 15000          # Total episodes
+total_episodes = 50000          # Total episodes
 learning_rate = 0.8             # Learning rate
 max_turns = 10                  # Max steps per episode
 gamma = 0.95                    # Discounting rate
@@ -18,8 +18,11 @@ state_size = action_size**3                 #for neutral player 1 or player 2
 qtable = np.zeros((state_size, action_size))
 print(qtable.shape)
 
+##Controller
+
 rewards = []
 victories = [0,0,0]#draw, p1 win, p2 win
+total_victories = [0,0,0]
 goGame = GoGame(BOARDSIZE)
 
 for episode in range(total_episodes):
@@ -76,8 +79,10 @@ for episode in range(total_episodes):
         victories[2] += 1
     else:
         victories[0] += 1
-    if(episode%10 == 0):
-        print(victories)
+    if(episode%1000 == 0):
+        print(str(victories) + "{0:.2f}".format(epsilon))
+        total_victories += victories
+        victories = [0,0,0]
 
 print ("Score over time: " +  str(sum(rewards)/total_episodes))
 print(qtable)
