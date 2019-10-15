@@ -305,6 +305,8 @@ class GoGame:
         coord=[0,0]
         coord[0] = int(flat_move / self.boardSize)
         coord[1] = flat_move % self.boardSize
+        if(coord[0]>=self.boardSize or  coord[1]>=self.boardSize):
+            print("error2")
         return tuple(coord)
 
 # TODO

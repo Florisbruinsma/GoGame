@@ -1,6 +1,5 @@
 from GoGame import GoGame
 import numpy as np
-import gym
 import random
 BOARDSIZE = 5                   # Size of the dimensions of the board
 total_episodes = 15000          # Total episodes
@@ -18,7 +17,6 @@ action_size = BOARDSIZE*BOARDSIZE           #because you can do a potential acti
 state_size = action_size**3                 #for neutral player 1 or player 2
 qtable = np.zeros((state_size, action_size))
 print(qtable.shape)
-
 
 rewards = []
 victories = [0,0,0]#draw, p1 win, p2 win
@@ -52,6 +50,9 @@ for episode in range(total_episodes):
 
         reward = score[2]-score[1]
         action = goGame.coordToFlatMove(action)
+        if(action>=25):
+            print("error_action")
+            action = 24
         # Update Q(s,a):= Q(s,a) + lr [R(s,a) + gamma * max Q(s',a') - Q(s,a)]
         # qtable[new_state,:] : all the actions we can take from new state
         qtable[state, action] = qtable[state, action] + learning_rate * (reward + gamma * np.max(qtable[new_state, :]) - qtable[state, action])
