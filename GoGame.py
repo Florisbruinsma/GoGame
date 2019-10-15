@@ -34,7 +34,7 @@ class GoGame:
         self.passMove = [0,0]
         self.currentTurn = 0
 
-    def printBoard(self, board=self.currentBoard):
+    def printBoard(self, board="currentBoard"):
         """
             print the given game board with player 1 as x and player 2 as o
         Parameters
@@ -44,6 +44,8 @@ class GoGame:
         ----
             nothing
         """
+        if(board == "currentBoard"):
+            board = self.currentBoard
         print('\n ',end='')
         for col in range(self.boardSize):
             print(col,end='')
@@ -219,7 +221,7 @@ class GoGame:
             total_amount -= self.captures[player]
             self.scores[player] = total_amount
 
-        return sum(self.scores)
+        return self.scores
 
     def resolveTurn(self,player):
         """
@@ -273,31 +275,12 @@ class GoGame:
             else:
                 self.groups[0].append(chain)
 
-
-
-go = GoGame(5)
-go.takeTurn((2,1),2)
-print(go.countScore())
-go.takeTurn((0,0),2)
-print(go.countScore())
-go.takeTurn((0,1),2)
-print(go.countScore())
-go.takeTurn((1,1),1)
-print(go.countScore())
-go.takeTurn((3,1),1)
-print(go.countScore())
-go.__init__(5)
-go.takeTurn((2,0),1)
-print(go.countScore())
-go.takeTurn((2,2),1)
-print(go.countScore())
-go.takeTurn((2,3),1)
-print(go.countScore())
-go.takeTurn((2,4),1)
-go.printBoard(go.currentBoard)
-print(go.countScore())
-# x = go.resolveTurn((0,0),0,[])
-
-# also create non groups
-# add pass as an option for a turn
-# if all adjacent intersections of a neutral chain belong to one player or are neutral, the chain is theirs
+# TODO
+"""
+Create a handicap system, based on board size
+Enable or disable if turns should be forced to be alternately between the players
+Setting an amount of handicap points for going second
+visual interface class
+coin toss funcion to decide who goes first
+function to return list with possible moves for a player
+"""
