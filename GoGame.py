@@ -84,7 +84,7 @@ class GoGame:
             handles everything that happens during a turn
         Parameters
         ----
-            coord : tupple, coord is used as (row,col)
+            coord : tuple, coord is used as (row,col)
             player: int, number of the player, can be 1 or 2
             passMove: bool set this as true if you want to pass
         Returns
@@ -106,6 +106,7 @@ class GoGame:
         self.resolveTurn(player)
         self.boardHistory = np.vstack((self.boardHistory,np.expand_dims(self.currentBoard,axis=0)))
         self.currentTurn += 1
+        self.countScore()
         return self.currentBoard, self.scores, False
 
     def checkNeighbours(self,coord):
@@ -113,7 +114,7 @@ class GoGame:
             check the neighbours of a coordinate
         Parameters
         ----
-            coord : tupple, coord is used as (row,col)
+            coord : tuple, coord is used as (row,col)
         Returns
         ----
             return a list with [top,right,down,left] neighbour with value 0,1,2 or 3 with 3 being oob
@@ -132,7 +133,7 @@ class GoGame:
             check if a move is valid
         Parameters
         ----
-            coord : tupple, coord is used as (row,col)
+            coord : tuple, coord is used as (row,col)
             player: int, number of the player, can be 1 or 2
         Returns
         ----
@@ -155,7 +156,7 @@ class GoGame:
             use recursion to find a complete chain that is connected from the coordinate
         Parameters
         ----
-            coord : tupple, coord is used as (row,col)
+            coord : tuple, coord is used as (row,col)
             val: int, state of a stone, can be 0, 1 or 2
         Returns
         ----
@@ -178,7 +179,7 @@ class GoGame:
             return a list of all liberties of the given chain
         Parameters
         ----
-            chain : list of tupple coordinates (row,col)
+            chain : list of tuple coordinates (row,col)
         Returns
         ----
             list of all the coordinates of liberties
@@ -197,7 +198,7 @@ class GoGame:
             removes all stones in given chain from the board and 
         Parameters
         ----
-            chain : list of tupple coordinates (row,col)
+            chain : list of tuple coordinates (row,col)
         Returns
         ----
             nothing
@@ -293,6 +294,18 @@ class GoGame:
     def getRandomMove(self,player):
         moves = self.getAllValidMoves(player)
         return random.choice(moves)
+
+    def coordToFlatMove(self, coord):
+        flat_move = coord[0]*self.boardSize+coord[1]
+        if(flat_move >= self.boardSize*self.boardSize):
+            print("error")
+        return flat_move
+
+    def flatMoveToCoord(self, flat_move):
+        coord=[0,0]
+        coord[0] = int(flat_move / self.boardSize)
+        coord[1] = flat_move % self.boardSize
+        return tuple(coord)
 
 # TODO
 """
