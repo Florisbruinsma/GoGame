@@ -12,9 +12,31 @@ class GoGame:
         self.groups = [],[],[]
         self.currentTurn = 0
 
-    def printBoard(self, board):
+    def restartGame(self, boardSize):
         """
-            print the given game board with player 1 as x and player w as o
+            resets all values, thereby restarting the game
+        Parameters
+        ----
+            boardSize : int, the size of the board
+        Returns
+        ----
+            nothing
+        """
+        self.boardSize = boardSize
+        self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
+        self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
+        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
+        self.players = [0,1,2]# neutral, p1, p2
+        self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
+        self.stones = [0,0,0]#amount of stones on the board fo player
+        self.scores = [0,0,0]
+        self.groups = [],[],[]
+        self.passMove = [0,0]
+        self.currentTurn = 0
+
+    def printBoard(self, board=self.currentBoard):
+        """
+            print the given game board with player 1 as x and player 2 as o
         Parameters
         ----
             board : 2d array with shape boardSize,boardSize
@@ -54,17 +76,26 @@ class GoGame:
             self.currentTurn = turn
             self.boardHistory = self.boardHistory[:turn+1]
 
-    def takeTurn(self, coord, player):#TODO should return the resulting board, score and if done
+    def takeTurn(self, coord, player, passMove = False):
         """
             handles everything that happens during a turn
         Parameters
         ----
             coord : tupple, coord is used as (row,col)
             player: int, number of the player, can be 1 or 2
+            passMove: bool set this as true if you want to pass
         Returns
         ----
-            nothing
+            currentBoard: 2d array of how the current board is after the move
+            score: array with the score of all players
+            done: bool true if game is over
         """
+        if(passMove == True):
+            self.passMove[player] = True
+            if(self.passMove[0] == True and self.passMove[1] == True):
+                return self.currentBoard, self.scores, True
+            else:
+                return self.currentBoard, self.scores, False
         if(not self.checkValidMove(coord,player)):
             return
         self.currentBoard[coord] = player
@@ -72,6 +103,7 @@ class GoGame:
         self.resolveTurn(player)
         self.boardHistory = np.vstack((self.boardHistory,np.expand_dims(self.currentBoard,axis=0)))
         self.currentTurn += 1
+        return self.currentBoard, self.scores, False
 
     def checkNeighbours(self,coord):
         """
@@ -127,6 +159,7 @@ class GoGame:
             list of the full chain
         """
         list1.append(coord)
+        self.boardCheck[coord] = 1#do this board check to make sure the first coord isn't added dubbel
         new_list = []
         connections = [(coord[0]+1,coord[1]),(coord[0],coord[1]+1),(coord[0]-1,coord[1]),(coord[0],coord[1]-1)]
         for coord in connections:
@@ -186,7 +219,7 @@ class GoGame:
             total_amount -= self.captures[player]
             self.scores[player] = total_amount
 
-        return self.scores
+        return sum(self.scores)
 
     def resolveTurn(self,player):
         """
@@ -244,13 +277,22 @@ class GoGame:
 
 go = GoGame(5)
 go.takeTurn((2,1),2)
+print(go.countScore())
 go.takeTurn((0,0),2)
+print(go.countScore())
 go.takeTurn((0,1),2)
+print(go.countScore())
 go.takeTurn((1,1),1)
+print(go.countScore())
 go.takeTurn((3,1),1)
+print(go.countScore())
+go.__init__(5)
 go.takeTurn((2,0),1)
+print(go.countScore())
 go.takeTurn((2,2),1)
+print(go.countScore())
 go.takeTurn((2,3),1)
+print(go.countScore())
 go.takeTurn((2,4),1)
 go.printBoard(go.currentBoard)
 print(go.countScore())
