@@ -1,4 +1,5 @@
 import numpy as np
+import random
 class GoGame:
     def __init__(self, boardSize):
         self.boardSize = boardSize
@@ -277,6 +278,22 @@ class GoGame:
 
     def getCurrentBoard(self):
         return self.currentBoard
+
+    def getAllValidMoves(self, player):
+        moves = []
+        for row in range(self.boardSize):
+            for col in range(self.boardSize):
+                coord = (row,col)
+                if(self.currentBoard[coord] == 0):
+                    neighbours = self.checkNeighbours(coord)
+                    if(((player == 1 and (1 in neighbours or 0 in neighbours)) or (player == 2 and (2 in neighbours or 0 in neighbours)))):
+                        moves.append(coord)
+        return moves
+
+    def getRandomMove(self,player):
+        moves = self.getAllValidMoves(player)
+        return random.choice(moves)
+
 # TODO
 """
 Create a handicap system, based on board size
@@ -284,5 +301,4 @@ Enable or disable if turns should be forced to be alternately between the player
 Setting an amount of handicap points for going second
 visual interface class
 coin toss funcion to decide who goes first
-function to return list with possible moves for a player
 """
