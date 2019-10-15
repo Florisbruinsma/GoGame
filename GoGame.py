@@ -275,6 +275,8 @@ class GoGame:
             else:
                 self.groups[0].append(chain)
 
+    def getCurrentBoard(self):
+        return self.currentBoard
 # TODO
 """
 Create a handicap system, based on board size
