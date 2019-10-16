@@ -25,7 +25,7 @@ class A2CAgent:
                 env.render()
         return ep_reward
 
-    def train(self, env, batch_sz=32, updates=1000):
+    def train(self, env, batch_sz=32, updates=1000, info=False, info_step=25):
         # storage helpers for a single batch of data
         actions = np.empty((batch_sz,), dtype=np.int32)
         rewards, dones, values = np.empty((3, batch_sz))
@@ -51,7 +51,7 @@ class A2CAgent:
             # performs a full training step on the collected batch
             # note: no need to mess around with gradients, Keras API handles it
             losses = self.model.train_on_batch(observations, [acts_and_advs, returns])
-            if(update%10 == 0):
+            if(update%info_step == 0 and info==True):
                 print(update)
         return ep_rews
 
