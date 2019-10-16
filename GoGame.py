@@ -1,7 +1,13 @@
 import numpy as np
 import random
+class ObservationSpace:
+    def __init__(self, boardSize=5):
+        self.shape = (25,)
+class ActionSpace:
+    def __init__(self, boardSize=5):
+        self.n = boardSize*boardSize
 class GoGame:
-    def __init__(self, boardSize):
+    def __init__(self, boardSize=5):
         self.boardSize = boardSize
         self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
         self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
@@ -12,8 +18,10 @@ class GoGame:
         self.scores = [0,0,0]
         self.groups = [],[],[]
         self.currentTurn = 0
+        self.action_space = ActionSpace(5)
+        self.observation_space = ObservationSpace(5)
 
-    def restartGame(self, boardSize):
+    def restartGame(self, boardSize=5):
         """
             resets all values, thereby restarting the game
         Parameters
@@ -101,7 +109,7 @@ class GoGame:
                 return self.currentBoard, self.scores, False
         if(not self.checkValidMove(coord,player)):
             # print("invalid_move")
-            return self.currentBoard, [0,0,1000], False#TODO move this to the controller
+            return False
         self.currentBoard[coord] = player
         self.stones[player] += 1
         self.resolveTurn(player)
@@ -333,6 +341,33 @@ class GoGame:
             tri_num //= 10                # cuts off the last digit of a (// is integer division in python 3.x)
             inc *= 3             # base (2 for binary, 3 for ternary, etc)
         return dec_num
+
+##-----functionalities to make this class feel just like open ai gym-----
+    def step(self, action):
+        reward = 0
+        move = self.flatMoveToCoord(action)
+        if(not self.takeTurn(move, 1)):
+            reward = -100
+        self.takeTurn(self.getRandomMove(2), 2)#let ai take random move
+        next_state = self.currentBoard.flatten()
+        if(reward == 0):
+            reward = self.scores[1] - self.scores[2]
+        if(self.currentTurn >= 20):
+            done = True
+        else:
+            done = False
+        info = "Go game"
+        return next_state, reward, done, info
+
+    def reset(self, boardSize=5):
+        scores = self.scores
+        self.restartGame(boardSize)
+        obs = self.currentBoard.flatten()
+        return obs
+
+    def render(self):
+        self.printBoard()
+
 # TODO
 """
 Create a handicap system, based on board size
