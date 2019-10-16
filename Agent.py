@@ -32,7 +32,7 @@ class A2CAgent:
         observations = np.empty((batch_sz,) + env.observation_space.shape)
         # training loop: collect samples, send to optimizer, repeat updates times
         ep_rews = [0.0]
-        next_obs = env.reset()
+        next_obs = env.reset().astype('float32')
         for update in range(updates):
             for step in range(batch_sz):
                 observations[step] = next_obs.copy()
@@ -51,7 +51,8 @@ class A2CAgent:
             # performs a full training step on the collected batch
             # note: no need to mess around with gradients, Keras API handles it
             losses = self.model.train_on_batch(observations, [acts_and_advs, returns])
-            print(update)
+            if(update%10 == 0):
+                print(update)
         return ep_rews
 
     def _returns_advantages(self, rewards, dones, values, next_value):

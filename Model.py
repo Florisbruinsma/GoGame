@@ -20,7 +20,7 @@ class Model(tf.keras.Model):
 
     def call(self, inputs):
         # inputs is a numpy array, convert to Tensor
-        x = tf.convert_to_tensor(inputs, dtype=tf.float32)
+        x = tf.convert_to_tensor(inputs, dtype=inputs.dtype)
         # separate hidden layers from the same input tensor
         hidden_logs = self.hidden1(x)
         hidden_vals = self.hidden2(x)
