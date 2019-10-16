@@ -52,7 +52,7 @@ class A2CAgent:
             # note: no need to mess around with gradients, Keras API handles it
             losses = self.model.train_on_batch(observations, [acts_and_advs, returns])
             if(update%info_step == 0 and info==True):
-                print(update)
+                print("episode = {}".format(update))
         return ep_rews
 
     def _returns_advantages(self, rewards, dones, values, next_value):
