@@ -310,6 +310,29 @@ class GoGame:
             print("error2")
         return tuple(coord)
 
+    def boardToTri(self, board="currentBoard"):
+        if(str(board) == "currentBoard"):
+            board = self.currentBoard
+        return int(''.join(map(str, board.flatten())))
+
+    def decToTri(self, dec_num):
+        if dec_num == 0:
+            return 0
+        nums = []
+        while dec_num:
+            dec_num, remain = divmod(dec_num, 3)
+            nums.append(str(remain))
+        return int(''.join(reversed(nums)))
+
+    def TriToDec(self, tri_num):
+        dec_num = 0                     # output sum
+        inc = 1                     # incrementing number (what you multiply each digit by)
+        while tri_num:
+            digit = inc * (tri_num % 10)  # last digit of a times the incrementer
+            dec_num += digit            # digit added to sum
+            tri_num //= 10                # cuts off the last digit of a (// is integer division in python 3.x)
+            inc *= 3             # base (2 for binary, 3 for ternary, etc)
+        return dec_num
 # TODO
 """
 Create a handicap system, based on board size

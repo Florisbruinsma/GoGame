@@ -1,10 +1,10 @@
 from GoGame import GoGame
 import numpy as np
 import random
-BOARDSIZE = 5                   # Size of the dimensions of the board
+BOARDSIZE = 4                   # Size of the dimensions of the board
 total_episodes = 50000          # Total episodes
 learning_rate = 0.8             # Learning rate
-max_turns = 10                  # Max steps per episode
+max_turns = 12                  # Max steps per episode
 gamma = 0.95                    # Discounting rate
 
 # Exploration parameters
@@ -14,8 +14,8 @@ min_epsilon = 0.01              # Minimum exploration probability
 decay_rate = 0.00005              # Exponential decay rate for exploration prob
 
 action_size = BOARDSIZE*BOARDSIZE           #because you can do a potential action on every space of the board
-state_size = action_size**3                 #for neutral player 1 or player 2
-qtable = np.zeros((state_size, action_size))
+state_size = 3**action_size                 #for neutral player 1 or player 2
+qtable = np.zeros((state_size, action_size),dtype=np.byte)
 print(qtable.shape)
 
 ##Controller
@@ -28,7 +28,7 @@ goGame = GoGame(BOARDSIZE)
 for episode in range(total_episodes):
     # Reset the environment
     goGame.restartGame(BOARDSIZE)
-    state = goGame.getCurrentBoard()
+    state = goGame.TriToDec(goGame.boardToTri())
     step = 0
     done = False
     total_rewards = 0
@@ -48,7 +48,7 @@ for episode in range(total_episodes):
         # Take the action and observe the result after the oponent has also taken a turn
         # new_state, score, done = goGame.takeTurn(action,1)
         new_state, score, done = goGame.takeTurn(action,1)
-
+        new_state = goGame.TriToDec(goGame.boardToTri(new_state))
         # new_state, score, done = goGame.takeTurn(goGame.getRandomMove(2),2)#take a random turn for player 2
         goGame.takeTurn(goGame.getRandomMove(2),2)
 
