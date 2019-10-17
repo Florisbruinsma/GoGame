@@ -4,9 +4,10 @@ from Agent import A2CAgent
 import numpy as np
 import random
 import gym
+import time
 
 # env = gym.make('CartPole-v0')
-env = GoGame(5)
+env = GoGame(6)
 model = Model(num_actions=env.action_space.n)
 # env.observation_space.shape
 obs = env.reset()
@@ -14,15 +15,7 @@ obs = env.reset()
 # no feed_dict or tf.Session() needed at all
 agent = A2CAgent(model)
 
-rewards_history = agent.train(env,updates=100)
-print(rewards_history)
-rewards_history = agent.train(env,updates=100)
-print(rewards_history)
-rewards_history = agent.train(env,updates=100)
-print(rewards_history)
-print("Finished training, testing...")
-for _ in range(10):
-    print("total score = %d " % agent.test(env,render=True))
+rewards_history = agent.train(env,updates=20, info=False, info_step=50)
 
 """
 TODO

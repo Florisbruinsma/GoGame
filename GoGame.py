@@ -357,9 +357,9 @@ class GoGame:
         info = "Go game"
         return next_state, reward, done, info
 
-    def reset(self, boardSize=5):
+    def reset(self):
         scores = self.scores
-        self.restartGame(boardSize)
+        self.restartGame(self.boardSize)
         obs = self.currentBoard.flatten()
         return obs
 
