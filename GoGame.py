@@ -2,7 +2,7 @@ import numpy as np
 import random
 class ObservationSpace:
     def __init__(self, boardSize=5):
-        self.shape = (25,)
+        self.shape = (boardSize*boardSize,)
 class ActionSpace:
     def __init__(self, boardSize=5):
         self.n = boardSize*boardSize
@@ -18,8 +18,8 @@ class GoGame:
         self.scores = [0,0,0]
         self.groups = [],[],[]
         self.currentTurn = 0
-        self.action_space = ActionSpace(5)
-        self.observation_space = ObservationSpace(5)
+        self.action_space = ActionSpace(boardSize)
+        self.observation_space = ObservationSpace(boardSize)
 
     def restartGame(self, boardSize=5):
         """

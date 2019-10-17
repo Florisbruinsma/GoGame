@@ -23,3 +23,10 @@ print(rewards_history)
 print("Finished training, testing...")
 for _ in range(10):
     print("total score = %d " % agent.test(env,render=True))
+
+"""
+TODO
+make sure train shows final game score
+customize train
+make sure the rewards are looked at better
+"""
