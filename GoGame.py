@@ -306,8 +306,6 @@ class GoGame:
 
     def coordToFlatMove(self, coord):
         flat_move = coord[0]*self.boardSize+coord[1]
-        if(flat_move >= self.boardSize*self.boardSize):
-            print("error")
         return flat_move
 
     def flatMoveToCoord(self, flat_move):
@@ -315,7 +313,7 @@ class GoGame:
         coord[0] = int(flat_move / self.boardSize)
         coord[1] = flat_move % self.boardSize
         if(coord[0]>=self.boardSize or  coord[1]>=self.boardSize):
-            print("error2")
+            coord = [0,0]
         return tuple(coord)
 
     def boardToTri(self, board="currentBoard"):
