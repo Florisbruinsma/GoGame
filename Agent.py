@@ -25,23 +25,28 @@ class A2CAgent:
                 env.render()
         return ep_reward
 
-    def train(self, env, batch_sz=32, updates=1000, info=False, info_step=25):
+    def train(self, env, max_steps=50, episodes=1000, info=False, info_step=25):
         # storage helpers for a single batch of data
-        actions = np.empty((batch_sz,), dtype=np.int32)
-        rewards, dones, values = np.empty((3, batch_sz))
-        observations = np.empty((batch_sz,) + env.observation_space.shape)
-        # training loop: collect samples, send to optimizer, repeat updates times
-        ep_rews = [0.0]
+        actions = np.empty((max_steps,), dtype=np.int32)
+        rewards, dones, values = np.empty((3, max_steps))
+        observations = np.empty((max_steps,) + env.observation_space.shape)
+        # training loop: collect samples, send to optimizer, repeat episodes times
+        episode_rewards = [0.0]
+        episode_wins = []
         next_obs = env.reset().astype('float32')
-        for update in range(updates):
-            for step in range(batch_sz):
+        for episode in range(episodes):
+            for step in range(max_steps):
                 observations[step] = next_obs.copy()
                 actions[step], values[step] = self.model.action_value(next_obs[None, :])
                 next_obs, rewards[step], dones[step], _ = env.step(actions[step])
 
-                ep_rews[-1] += rewards[step]
+                episode_rewards[-1] += rewards[step]
                 if dones[step]:
-                    ep_rews.append(0.0)
+                    episode_rewards.append(0.0)
+                    if((env.scores[1]-env.scores[2]) > 0):
+                        episode_wins.append(1)
+                    else:
+                        episode_wins.append(0)
                     next_obs = env.reset()
 
             _, next_value = self.model.action_value(next_obs[None, :])
@@ -51,9 +56,9 @@ class A2CAgent:
             # performs a full training step on the collected batch
             # note: no need to mess around with gradients, Keras API handles it
             losses = self.model.train_on_batch(observations, [acts_and_advs, returns])
-            if(update%info_step == 0 and info==True):
-                print("episode = {}".format(update))
-        return ep_rews
+            if(episode%info_step == 0 and info==True):
+                print("episode = {}".format(episode))
+        return episode_rewards, episode_wins
 
     def _returns_advantages(self, rewards, dones, values, next_value):
         # next_value is the bootstrap value estimate of a future state (the critic)

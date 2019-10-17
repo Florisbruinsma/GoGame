@@ -7,60 +7,47 @@ class ActionSpace:
     def __init__(self, boardSize=5):
         self.n = boardSize*boardSize
 class GoGame:
-    def __init__(self, boardSize=5):
+    def __init__(self, boardSize=5, maxTurn=30):
         self.boardSize = boardSize
+        self.maxTurn = maxTurn
         self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
         self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
         self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
         self.players = [0,1,2]# neutral, p1, p2
         self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
-        self.stones = [0,0,0]#amount of stones on the board fo player
         self.scores = [0,0,0]
         self.groups = [],[],[]
+        self.passMove = [0,0]
         self.currentTurn = 0
         self.action_space = ActionSpace(boardSize)
         self.observation_space = ObservationSpace(boardSize)
 
-    def restartGame(self, boardSize=5):
+    def restartGame(self):
         """
             resets all values, thereby restarting the game
-        Parameters
-        ----
-            boardSize : int, the size of the board
-        Returns
-        ----
-            nothing
         """
-        self.boardSize = boardSize
-        self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
-        self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
+        self.currentBoard = np.zeros((self.boardSize,self.boardSize), dtype = int)#current state of the board as 2d array
+        self.boardHistory = np.expand_dims(np.zeros((self.boardSize,self.boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
         self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
-        self.players = [0,1,2]# neutral, p1, p2
         self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
-        self.stones = [0,0,0]#amount of stones on the board fo player
         self.scores = [0,0,0]
         self.groups = [],[],[]
         self.passMove = [0,0]
         self.currentTurn = 0
 
-    def printBoard(self, board="currentBoard"):
+    def printBoard(self, specific_board=False):
         """
             print the given game board with player 1 as x and player 2 as o
         Parameters
         ----
-            board : 2d array with shape boardSize,boardSize
+            specific_board : 2d array with shape boardSize,boardSize
         Returns
         ----
             nothing
         """
-        if(board == "currentBoard"):
+        if(not specific_board):
             board = self.currentBoard
-        print('\n ',end='')
-        for col in range(self.boardSize):
-            print(col,end='')
-        print('')
         for row in range(self.boardSize):
-            print(row,end='')
             for col in range(self.boardSize):
                 if(board[row][col] == 0):
                     print('-',end='')
@@ -97,26 +84,72 @@ class GoGame:
             passMove: bool set this as true if you want to pass
         Returns
         ----
-            currentBoard: 2d array of how the current board is after the move
-            score: array with the score of all players
             done: bool true if game is over
         """
         if(passMove == True):
             self.passMove[player] = True
             if(self.passMove[0] == True and self.passMove[1] == True):
-                return self.currentBoard, self.scores, True
+                return True
             else:
-                return self.currentBoard, self.scores, False
+                return False
         if(not self.checkValidMove(coord,player)):
-            # print("invalid_move")
             return False
         self.currentBoard[coord] = player
-        self.stones[player] += 1
         self.resolveTurn(player)
         self.boardHistory = np.vstack((self.boardHistory,np.expand_dims(self.currentBoard,axis=0)))
         self.currentTurn += 1
-        self.countScore()
-        return self.currentBoard, self.scores, False
+        self.updateScore()
+        return False
+
+    def resolveTurn(self,player):
+        """
+            resolves everything that happens after a stone is placed. Like stone captures, and tries to find the current groups, for the score
+        Parameters
+        ----
+            player : int can be 1 or 2 is used to determine which pieces to capture first
+        Returns
+        ----
+            nothing
+        """
+        # assign every space on the board to a chain
+        capture = False
+        chains = [],[],[]
+        self.groups = [],[],[]
+        first_player = 1 if (player==1) else 2#which player played this turn, so captures can be checked first for the oponent
+        second_player = 2 if (player==1) else 1
+        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)
+        #create and extend chains
+        for row in range(self.boardSize):
+            for col in range(self.boardSize):
+                if(self.boardCheck[row][col] == 0):
+                    chains[self.currentBoard[row][col]].append(self.extendChains((row,col),self.currentBoard[row][col]))
+        #check for captures
+        for chain in chains[second_player]:
+            if(len(self.getLiberties(chain)) == 0):
+                self.captures[second_player] += len(chain)
+                self.removeStones(chain)
+                capture = True
+        for chain in chains[first_player]:
+            if(len(self.getLiberties(chain)) == 0):
+                self.captures[first_player] += len(chain)
+                self.removeStones(chain)
+                capture = True
+        if capture:
+            self.resolveTurn(player)
+            return
+        #add some of the neutral chains to player groups
+        self.groups[1].extend(chains[1])
+        self.groups[2].extend(chains[2])
+        for chain in chains[0]:
+            connection = []
+            for coord in chain:
+                connection.extend(self.checkNeighbours(coord))
+            if (not(2 in connection) and 1 in connection):
+                self.groups[1].append(chain)
+            elif (not(1 in connection) and 2 in connection):
+                self.groups[2].append(chain)
+            else:
+                self.groups[0].append(chain)
 
     def checkNeighbours(self,coord):
         """
@@ -137,7 +170,7 @@ class GoGame:
                 neighbours.append(self.currentBoard[coord])
         return neighbours
 
-    def checkValidMove(self,coord, player):
+    def checkValidMove(self, coord, player):
         """
             check if a move is valid
         Parameters
@@ -160,7 +193,7 @@ class GoGame:
             return False
         return True
 
-    def extendChains(self,coord,val,list1=[]):
+    def extendChains(self,coord,val,chain_list=None):
         """
             use recursion to find a complete chain that is connected from the coordinate
         Parameters
@@ -171,7 +204,9 @@ class GoGame:
         ----
             list of the full chain
         """
-        list1.append(coord)
+        if(chain_list==None):
+            chain_list=[]
+        chain_list.append(coord)
         self.boardCheck[coord] = 1#do this board check to make sure the first coord isn't added dubbel
         new_list = []
         connections = [(coord[0]+1,coord[1]),(coord[0],coord[1]+1),(coord[0]-1,coord[1]),(coord[0],coord[1]-1)]
@@ -180,8 +215,8 @@ class GoGame:
                 new_list.append(coord)
                 self.boardCheck[coord] = 1
         for coord in new_list:
-            list1.extend(self.extendChains(coord,val,[]))
-        return list1
+            chain_list.extend(self.extendChains(coord,val))
+        return chain_list
 
     def getLiberties(self, chain):
         """
@@ -215,7 +250,7 @@ class GoGame:
         for coord in chain:
             self.currentBoard[coord] = 0
 
-    def countScore(self):
+    def updateScore(self):
         """
             counts the total score per player for existing groups and captured stones
         Parameters
@@ -227,64 +262,14 @@ class GoGame:
         """
         for player in self.players:
             total_amount = 0
-            for chain in self.groups[player]:
-                total_amount += len(chain)
+            for group in self.groups[player]:
+                total_amount += len(group)
             total_amount -= self.captures[player]
             self.scores[player] = total_amount
 
         return self.scores
 
-    def resolveTurn(self,player):
-        """
-            resolves everything that happens after a stone is placed. Like stone captures, and tries to find the current groups, for the score
-        Parameters
-        ----
-            player : int can be 1 or 2 is used to determine which pieces to capture first
-        Returns
-        ----
-            nothing
-        """
-        # assign every space on the board to a chain
-        capture = False
-        chains = [],[],[]
-        self.groups = [],[],[]
-        first_player = 1 if (player==1) else 2#which player played this turn, so captures can be checked first for the oponent
-        second_player = 2 if (player==1) else 1
-        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)
-        #create and extend chains
-        for row in range(self.boardSize):
-            for col in range(self.boardSize):
-                if(self.boardCheck[row][col] == 0):
-                    chains[self.currentBoard[row][col]].append(self.extendChains((row,col),self.currentBoard[row][col],[]))
-        #check for captures
-        for chain in chains[second_player]:
-            if(len(self.getLiberties(chain)) == 0):
-                self.captures[second_player] += len(chain)
-                self.stones[second_player] -= len(chain)
-                self.removeStones(chain)
-                capture = True
-        for chain in chains[first_player]:
-            if(len(self.getLiberties(chain)) == 0):
-                self.captures[first_player] += len(chain)
-                self.stones[first_player] -= len(chain)
-                self.removeStones(chain)
-                capture = True
-        if capture:
-            self.resolveTurn(player)
-            return
-        #add some of the neutral chains to player groups
-        self.groups[1].extend(chains[1])
-        self.groups[2].extend(chains[2])
-        for chain in chains[0]:
-            connection = []
-            for coord in chain:
-                connection.extend(self.checkNeighbours(coord))
-            if (not(2 in connection) and 1 in connection):
-                self.groups[1].append(chain)
-            elif (not(1 in connection) and 2 in connection):
-                self.groups[2].append(chain)
-            else:
-                self.groups[0].append(chain)
+##-----helper functions-----##
 
     def getCurrentBoard(self):
         return self.currentBoard
@@ -340,28 +325,31 @@ class GoGame:
             inc *= 3             # base (2 for binary, 3 for ternary, etc)
         return dec_num
 
-##-----functionalities to make this class feel just like open ai gym-----
+    def makeRandomMove(self, player):
+        return self.takeTurn(self.getRandomMove(player), player)
+
+##-----functionalities to make this class feel just like open ai gym-----##
     def step(self, action):
         reward = 0
-        move = self.flatMoveToCoord(action)
-        if(not self.takeTurn(move, 1)):
-            reward = -100
-        self.takeTurn(self.getRandomMove(2), 2)#let ai take random move
-        next_state = self.currentBoard.flatten()
+        coord = self.flatMoveToCoord(action)
+        if(not self.takeTurn(coord, 1)):
+            reward = -1000
+        self.makeRandomMove(2)#let ai take random move
+
+        state = self.currentBoard.flatten()
         if(reward == 0):
             reward = self.scores[1] - self.scores[2]
-        if(self.currentTurn >= 20):
+        if(self.currentTurn >= self.maxTurn):
             done = True
         else:
             done = False
         info = "Go game"
-        return next_state, reward, done, info
+        return state, reward, done, info
 
     def reset(self):
-        scores = self.scores
-        self.restartGame(self.boardSize)
-        obs = self.currentBoard.flatten()
-        return obs
+        self.restartGame()
+        state = self.currentBoard.flatten()
+        return state
 
     def render(self):
         self.printBoard()
