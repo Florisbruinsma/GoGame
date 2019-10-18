@@ -37,9 +37,8 @@ class A2CAgent:
         for episode in range(episodes):
             for step in range(max_steps):
                 observations[step] = next_obs.copy()
-                actions[step], values[step] = self.model.action_value(next_obs[None, :])
+                actions[step], values[step] = self.model.action_value(next_obs[None, :])#tupple + few 1000
                 next_obs, rewards[step], dones[step], _ = env.step(actions[step])
-
                 episode_rewards[-1] += rewards[step]
                 if dones[step]:
                     episode_rewards.append(0.0)

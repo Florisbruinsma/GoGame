@@ -239,7 +239,7 @@ class GoGame:
 
     def removeStones(self, chain):
         """
-            removes all stones in given chain from the board and 
+            removes all stones in given chain from the board and
         Parameters
         ----
             chain : list of tuple coordinates (row,col)
