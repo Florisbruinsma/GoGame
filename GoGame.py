@@ -7,15 +7,25 @@ class ActionSpace:
     def __init__(self, boardSize=5):
         self.n = boardSize*boardSize
 class GoGame:
-    def __init__(self, boardSize=5, maxTurn=30):
-        self.boardSize = boardSize
-        self.maxTurn = maxTurn
-        self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d array
-        self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
-        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
+    def __init__(self, boardSize=5, maxTurns=30):
+        """
+            initiates all variables needed for 
+        Parameters
+        ----
+            boardSize : int size of the dimensions of the board
+            Maxturns : when using the step functtion for rl this is the amount of turn afterw hich a game will be ended
+        Returns
+        ----
+            nothing
+        """
+        self.boardSize = boardSize#dimensions of the board
+        self.maxTurns = maxTurns#maximum amount of turns that can be taken with the step function
+        self.currentBoard = np.zeros((boardSize,boardSize), dtype = int)#current state of the board as 2d list
+        self.boardHistory = np.expand_dims(np.zeros((boardSize,boardSize), dtype = int),axis=0)#history of all the turns as 3d list, first axis is turn amount
+        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#used to make sure places on the board dont get checked twice
         self.players = [0,1,2]# neutral, p1, p2
         self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
-        self.scores = [0,0,0]
+        self.scores = [0,0,0]#scores of the players
         self.groups = [],[],[]
         self.passMove = [0,0]
         self.currentTurn = 0
@@ -24,12 +34,16 @@ class GoGame:
 
     def restartGame(self):
         """
-            resets all values, thereby restarting the game
+            resets all changed values, thereby restarting the game
+        Returns
+        ----
+            nothing
         """
-        self.currentBoard = np.zeros((self.boardSize,self.boardSize), dtype = int)#current state of the board as 2d array
-        self.boardHistory = np.expand_dims(np.zeros((self.boardSize,self.boardSize), dtype = int),axis=0)#history of all the turns as 3d array, first axis is turn amount
-        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)#list of part of the board that is checked already
-        self.captures = [0,0,0]#amount of stones that where captures from the corresponding player
+        # for comments on the variables look at the __init__
+        self.currentBoard = np.zeros((self.boardSize,self.boardSize), dtype = int)
+        self.boardHistory = np.expand_dims(np.zeros((self.boardSize,self.boardSize), dtype = int),axis=0)
+        self.boardCheck = np.zeros((self.boardSize,self.boardSize), dtype = int)
+        self.captures = [0,0,0]
         self.scores = [0,0,0]
         self.groups = [],[],[]
         self.passMove = [0,0]
@@ -40,7 +54,7 @@ class GoGame:
             print the given game board with player 1 as x and player 2 as o
         Parameters
         ----
-            specific_board : 2d array with shape boardSize,boardSize
+            specific_board : 2d list with shape boardSize,boardSize
         Returns
         ----
             nothing
@@ -59,7 +73,7 @@ class GoGame:
 
     def revertBoard(self, turn):
         """
-            revert the current board back to a given turn
+            revert the current board back to the given turn
         Parameters
         ----
             turn : int, value of the turn you want to revert to
@@ -135,7 +149,7 @@ class GoGame:
                 self.removeStones(chain)
                 capture = True
         if capture:
-            self.resolveTurn(player)
+            self.resolveTurn(player)#something has changed on the board so we will check for captures again
             return
         #add some of the neutral chains to player groups
         self.groups[1].extend(chains[1])
@@ -195,7 +209,7 @@ class GoGame:
 
     def extendChains(self,coord,val,chain_list=None):
         """
-            use recursion to find a complete chain that is connected from the coordinate
+            use recursion to find every stone in the chain that is connected from the coordinate
         Parameters
         ----
             coord : tuple, coord is used as (row,col)
@@ -239,7 +253,7 @@ class GoGame:
 
     def removeStones(self, chain):
         """
-            removes all stones in given chain from the board and
+            removes all stones in given chain from the board
         Parameters
         ----
             chain : list of tuple coordinates (row,col)
@@ -252,7 +266,7 @@ class GoGame:
 
     def updateScore(self):
         """
-            counts the total score per player for existing groups and captured stones
+            counts the total score per player, you get a point per stone in your group and get 1 point substracted per captured stone
         Parameters
         ----
             None
@@ -271,10 +285,16 @@ class GoGame:
 
 ##-----helper functions-----##
 
-    def getCurrentBoard(self):
-        return self.currentBoard
-
     def getAllValidMoves(self, player):
+        """
+            creates a list of all valid possible moves for the player
+        Parameters
+        ----
+            player: int, number of the player, can be 1 or 2
+        Returns
+        ----
+            list of all the coord's of valid moves for that player
+        """
         moves = []
         for row in range(self.boardSize):
             for col in range(self.boardSize):
@@ -286,14 +306,41 @@ class GoGame:
         return moves
 
     def getRandomMove(self,player):
+        """
+            gives you a random alid move for the selected player
+        Parameters
+        ----
+            player: int, number of the player, can be 1 or 2
+        Returns
+        ----
+            coord : tuple, coord is used as (row,col)
+        """
         moves = self.getAllValidMoves(player)
         return random.choice(moves)
 
     def coordToFlatMove(self, coord):
+        """
+            converts a coord tupple to an int
+        Parameters
+        ----
+            coord : tuple, coord is used as (row,col)
+        Returns
+        ----
+            flat_move : int value of the given coord
+        """
         flat_move = coord[0]*self.boardSize+coord[1]
         return flat_move
 
     def flatMoveToCoord(self, flat_move):
+        """
+            converts an int to a coord tupple
+        Parameters
+        ----
+            flat_move : int value of the given coord
+        Returns
+        ----
+            coord : tuple, coord is used as (row,col)
+        """
         coord=[0,0]
         coord[0] = int(flat_move / self.boardSize)
         coord[1] = flat_move % self.boardSize
@@ -301,45 +348,30 @@ class GoGame:
             coord = [0,0]
         return tuple(coord)
 
-    def boardToTri(self, board="currentBoard"):
-        if(str(board) == "currentBoard"):
-            board = self.currentBoard
-        return int(''.join(map(str, board.flatten())))
-
-    def decToTri(self, dec_num):
-        if dec_num == 0:
-            return 0
-        nums = []
-        while dec_num:
-            dec_num, remain = divmod(dec_num, 3)
-            nums.append(str(remain))
-        return int(''.join(reversed(nums)))
-
-    def TriToDec(self, tri_num):
-        dec_num = 0                     # output sum
-        inc = 1                     # incrementing number (what you multiply each digit by)
-        while tri_num:
-            digit = inc * (tri_num % 10)  # last digit of a times the incrementer
-            dec_num += digit            # digit added to sum
-            tri_num //= 10                # cuts off the last digit of a (// is integer division in python 3.x)
-            inc *= 3             # base (2 for binary, 3 for ternary, etc)
-        return dec_num
-
     def makeRandomMove(self, player):
+        """
+            makes a random move for the given player
+        Parameters
+        ----
+            player: int, number of the player, can be 1 or 2
+        Returns
+        ----
+            done: bool true if game is over
+        """
         return self.takeTurn(self.getRandomMove(player), player)
 
-##-----functionalities to make this class feel just like open ai gym-----##
+##-----functionalities to make this class feel just like an open ai gym envirement-----##
     def step(self, action):
         reward = 0
         coord = self.flatMoveToCoord(action)
         if(not self.takeTurn(coord, 1)):
-            reward = -1000
+            reward = -100
         self.makeRandomMove(2)#let ai take random move
 
         state = self.currentBoard.flatten()
         if(reward == 0):
             reward = self.scores[1] - self.scores[2]
-        if(self.currentTurn >= self.maxTurn):
+        if(self.currentTurn >= self.maxTurns):
             done = True
         else:
             done = False

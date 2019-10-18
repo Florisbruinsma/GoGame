@@ -17,11 +17,11 @@ BOARDSIZE = 5
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
 logdir= "testlog"
 tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
-callbakcs = [tensorboard_callback]
+callbacks = [tensorboard_callback]
 
 
-env = GoGame(BOARDSIZE, maxTurn=MAXTURNS)
-model = Model(num_actions=env.action_space.n, callbacks=callbakcs)
+env = GoGame(BOARDSIZE, maxTurns=MAXTURNS)
+model = Model(num_actions=env.action_space.n, callbacks=callbacks)
 agent = A2CAgent(model)
 
 for epoch in range(EPOCHS):
@@ -36,16 +36,17 @@ for epoch in range(EPOCHS):
 
 """
 TODO
-logging like tensorboard
-also select the model for player 2, o this as option in env, stand is rand but can add versions of the model
-move functions in my class to make it more logical
-check if all local scopus use underscores and class scope use camelcase
-use the model in the goclass
+add notebook to git
+fix tensorboard log
 add coment to everything in class
 change the model
-add notebook to git
 customize train
 dubbel check if groups also take oponent pieces for the score
+also select the model for player 2, o this as option in env, stand is rand but can add versions of the model
+visualise model
+add passmove a scoor (-1,-1)
+use the model in the goclass
+
 
 
 
