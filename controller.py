@@ -15,7 +15,7 @@ from tensorflow.keras import callbacks
 EPOCHS = 20
 EPISODES = 50
 BOARDSIZE = 5
-LEARNINGRATE = 0.01
+LEARNINGRATE = 0.001
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
 # logdir= "testlog"
 # tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
@@ -31,8 +31,8 @@ agent = A2CAgent(model, lr = LEARNINGRATE)
 for epoch in range(EPOCHS):
     # gc.collect()
     backend.clear_session()
-    objgraph.show_growth()
-    print("--------------------------------")
+    # objgraph.show_growth()
+    # print("--------------------------------")
     time_start = time.time()
     rewards_history, episode_wins, losses = agent.train(env,max_steps=MAXTURNS,episodes=EPISODES, info=False, info_step=50)
     print("epoch = {:2} | won {:3}/{:3} matches | mean rewards = {:7.2f} | mean losses = {:7.2f} | epoch time = {:6.2f} sec".format(epoch, episode_wins.count(1), len(episode_wins), np.mean(rewards_history), np.mean(losses), (time.time()-time_start)))
