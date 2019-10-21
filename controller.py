@@ -14,16 +14,19 @@ from tensorflow.keras import callbacks
 EPOCHS = 20
 EPISODES = 10
 BOARDSIZE = 5
+LEARNINGRATE = 0.0007
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
-logdir= "testlog"
-tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
-callbacks = [tensorboard_callback]
+# logdir= "testlog"
+# tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
+# callbacks = [tensorboard_callback]
+callbacks = None
 
 
 env = GoGame(BOARDSIZE, maxTurns=MAXTURNS)
 model = Model(num_actions=env.action_space.n, callbacks=callbacks)
-agent = A2CAgent(model)
-
+model.action_value(env.reset()[None, :])#build the model
+model.summary()
+agent = A2CAgent(model, lr = LEARNINGRATE)
 for epoch in range(EPOCHS):
     # gc.collect()
     backend.clear_session()
@@ -36,9 +39,10 @@ for epoch in range(EPOCHS):
 
 """
 TODO
-add notebook to git
+make own log
+make train do one game at a time
+print model
 fix tensorboard log
-add coment to everything in class
 change the model
 customize train
 dubbel check if groups also take oponent pieces for the score
@@ -46,18 +50,4 @@ also select the model for player 2, o this as option in env, stand is rand but c
 visualise model
 add passmove a scoor (-1,-1)
 use the model in the goclass
-
-
-
-
-QUESTIONS
-local scope variables class cammelcase
-random moves ai in goclass or agent
-documenting class
-keeping up documentation
-document return nothing
-shoudl i always return something
-passmove (-1,-1)?
-removing unnescesary functions
-private values
 """

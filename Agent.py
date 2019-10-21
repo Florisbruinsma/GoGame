@@ -1,16 +1,15 @@
 import tensorflow.keras.losses as kls
 import tensorflow.keras.optimizers as ko
 import tensorflow as tf
-import tensorflow.keras.layers as kl
 import numpy as np
 
 class A2CAgent:
-    def __init__(self, model):
+    def __init__(self, model,lr=0.0007):
         # hyperparameters for loss terms
         self.params = {'value': 0.5, 'entropy': 0.0001, 'gamma': 0.99}
         self.model = model
         self.model.compile(
-            optimizer=ko.RMSprop(lr=0.0007),
+            optimizer=ko.RMSprop(lr=lr),
             # define separate losses for policy logits and value estimate
             loss=[self._logits_loss, self._value_loss]
         )
