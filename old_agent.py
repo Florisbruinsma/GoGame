@@ -25,56 +25,45 @@ class A2CAgent:
         return ep_reward
 
     def train(self, env, max_steps=50, episodes=1000, info=False, info_step=25):
-        done = False
-        rewards, actions, values = np.empty((3, 0))
-
+        # storage helpers for a single batch of data
+        actions = np.empty((max_steps,), dtype=np.int32)
+        rewards, dones, values = np.empty((3, max_steps))
+        observations = np.empty((max_steps,) + env.observation_space.shape)
+        # training loop: collect samples, send to optimizer, repeat episodes times
         episode_rewards = [0.0]
-        epoch_wins = []
-        losses = []
+        episode_wins = []
+        next_obs = env.reset().astype('float32')
         for episode in range(episodes):
             for step in range(max_steps):
-                # observations.append(next_obs.copy())
-                if('observations' in locals()):
-                    observations = np.vstack((observations , next_obs.copy()))
-                else:
-                    next_obs = env.reset().astype('float32')
-                    observations = next_obs.copy()
-                action, value = self.model.action_value(next_obs[None, :])
-                actions = np.append(actions, action)
-                values = np.append(values, value)
-
-                next_obs, reward, done, _ = env.step(int(action))
-                episode_rewards[-1] += reward
-                rewards = np.append(rewards, reward)
-                if done:
+                observations[step] = next_obs.copy()
+                actions[step], values[step] = self.model.action_value(next_obs[None, :])#tupple + few 1000
+                next_obs, rewards[step], dones[step], _ = env.step(actions[step])
+                episode_rewards[-1] += rewards[step]
+                if dones[step]:
                     episode_rewards.append(0.0)
                     if((env.scores[1]-env.scores[2]) > 0):
-                        epoch_wins.append(1)
+                        episode_wins.append(1)
                     else:
-                        epoch_wins.append(0)
+                        episode_wins.append(0)
                     next_obs = env.reset()
-                    break
 
-            _, next_value = self.model.action_value(next_obs[None, :])
-            returns, advs = self._returns_advantages(rewards, values, next_value)
+            _, next_value = self.model.action_value(next_obs[None, :])#(1, 25) int32
+            returns, advs = self._returns_advantages(rewards, dones, values, next_value)#(20,0) float64,same ,same , (1,0) float 32
             # a trick to input actions and advantages through same API
-            acts_and_advs = np.concatenate([actions[:, None], advs[:, None]], axis=-1)
+            acts_and_advs = np.concatenate([actions[:, None], advs[:, None]], axis=-1)#(20, 1) int 32,(20, 1) ('float64')
             # performs a full training step on the collected batch
             # note: no need to mess around with gradients, Keras API handles it
-            losses.append(self.model.train_on_batch(observations, [acts_and_advs, returns]))
+            losses = self.model.train_on_batch(observations, [acts_and_advs, returns])#(20, 25) float 64
             if(episode%info_step == 0 and info==True):
                 print("episode = {}".format(episode))
-            #reset variables
-            rewards, actions, values = np.empty((3, 0))
-            del observations
-        return episode_rewards, epoch_wins, losses
+        return episode_rewards, episode_wins
 
-    def _returns_advantages(self, rewards, values, next_value):
+    def _returns_advantages(self, rewards, dones, values, next_value):
         # next_value is the bootstrap value estimate of a future state (the critic)
         returns = np.append(np.zeros_like(rewards), next_value, axis=-1)
         # returns are calculated as discounted sum of future rewards
         for t in reversed(range(rewards.shape[0])):
-            returns[t] = rewards[t] + self.params['gamma'] * returns[t+1]# * (1-dones[t])
+            returns[t] = rewards[t] + self.params['gamma'] * returns[t+1] * (1-dones[t])
         returns = returns[:-1]
         # advantages are returns - baseline, value estimates in our case
         advantages = returns - values

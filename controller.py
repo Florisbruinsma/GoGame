@@ -2,6 +2,7 @@ import objgraph
 from GoGame import GoGame
 from Model import Model
 from Agent import A2CAgent
+# from old_agent import A2CAgent
 import numpy as np
 import random
 import gym
@@ -12,9 +13,9 @@ from tensorflow.keras import callbacks
 # import xdot
 
 EPOCHS = 20
-EPISODES = 10
+EPISODES = 50
 BOARDSIZE = 5
-LEARNINGRATE = 0.0007
+LEARNINGRATE = 0.01
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
 # logdir= "testlog"
 # tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
@@ -33,14 +34,13 @@ for epoch in range(EPOCHS):
     objgraph.show_growth()
     print("--------------------------------")
     time_start = time.time()
-    rewards_history, episode_wins = agent.train(env,max_steps=MAXTURNS,episodes=EPISODES, info=False, info_step=50)
-    print("epoch = {:2} | won {:3}/{:3} matches | mean rewards = {:7.2f} | epoch time = {:6.2f} sec".format(epoch, episode_wins.count(1), len(episode_wins), np.mean(rewards_history), (time.time()-time_start)))
+    rewards_history, episode_wins, losses = agent.train(env,max_steps=MAXTURNS,episodes=EPISODES, info=False, info_step=50)
+    print("epoch = {:2} | won {:3}/{:3} matches | mean rewards = {:7.2f} | mean losses = {:7.2f} | epoch time = {:6.2f} sec".format(epoch, episode_wins.count(1), len(episode_wins), np.mean(rewards_history), np.mean(losses), (time.time()-time_start)))
 
 
 """
 TODO
 make own log
-make train do one game at a time
 print model
 fix tensorboard log
 change the model

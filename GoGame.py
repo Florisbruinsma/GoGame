@@ -113,7 +113,7 @@ class GoGame:
         self.boardHistory = np.vstack((self.boardHistory,np.expand_dims(self.currentBoard,axis=0)))
         self.currentTurn += 1
         self.updateScore()
-        return False
+        return True
 
     def resolveTurn(self,player):
         """
