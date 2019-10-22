@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script type=text/javascript>
+    $(function() {
+        $('div#board5').bind('click', function() {
+            $.getJSON('/background_process_test',
+                function(data) {
+                //do nothing
+            });
+            return false;
+        });
+    });
+</script>
+
+<div class='goGame black' id='board5'>
+    <div class='row'>
+        <div class='goBoard'>
+            <div class='row'>
+                <div class='cell' data-x='0' data-y='0'></div>
+                <div class='cell' data-x='0' data-y='1'></div>
+                <div class='cell' data-x='0' data-y='2'></div>
+                <div class='cell' data-x='0' data-y='3'></div>
+                <div class='cell' data-x='0' data-y='4'></div>
+            </div>
+            <div class='row'>
+                <div class='cell' data-x='1' data-y='0'></div>
+                <div class='cell' data-x='1' data-y='1'></div>
+                <div class='cell' data-x='1' data-y='2'></div>
+                <div class='cell' data-x='1' data-y='3'></div>
+                <div class='cell' data-x='1' data-y='4'></div>
+            </div>
+            <div class='row'>
+                <div class='cell' data-x='2' data-y='0'></div>
+                <div class='cell' data-x='2' data-y='1'></div>
+                <div class='cell' data-x='2' data-y='2'></div>
+                <div class='cell' data-x='2' data-y='3'></div>
+                <div class='cell' data-x='2' data-y='4'></div>
+            </div>
+            <div class='row'>
+                <div class='cell' data-x='3' data-y='0'></div>
+                <div class='cell' data-x='3' data-y='1'></div>
+                <div class='cell' data-x='3' data-y='2'></div>
+                <div class='cell' data-x='3' data-y='3'></div>
+                <div class='cell' data-x='3' data-y='4'></div>
+            </div>
+            <div class='row'>
+                <div class='cell' data-x='4' data-y='0'></div>
+                <div class='cell' data-x='4' data-y='1'></div>
+                <div class='cell' data-x='4' data-y='2'></div>
+                <div class='cell' data-x='4' data-y='3'></div>
+                <div class='cell' data-x='4' data-y='4'></div>
+            </div>
+        </div>
+    </div>
+    <div class='goPlayers'>
+        <div class='stats black'>
+            <div class='stone'></div>
+            <div class='pass'>Pass</div>
+            <div class='captures'></div>
+        </div>
+        <div class='stats white'>
+            <div class='stone'></div>
+            <div class='pass'>Pass</div>
+            <div class='captures'></div>
+        </div>
+    </div>
+    <div class='goControls'>
+        <div class='controlRow'>
+            <div class='back'>back</div>
+            <div class='play'>play</div>
+            <div class='forward'>forward</div>
+        </div>
+        <div class='treeBox'>
+            <div class='tree'></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

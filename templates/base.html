@@ -1,0 +1,17 @@
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/go.css') }}">
+    </head>
+    <body>
+            <ul>
+                <li><a href="/#">Settings</a></li>
+                <li><a href="/reset">Reset</a></li>
+            </ul>
+        {% block content %}{% endblock %}
+
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+        <script  src="{{ url_for('static', filename='js/go.js') }}"></script>
+    </body>
+</html>

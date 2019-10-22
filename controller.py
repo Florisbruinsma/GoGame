@@ -15,7 +15,7 @@ from tensorflow.keras import callbacks
 EPOCHS = 20
 EPISODES = 50
 BOARDSIZE = 5
-LEARNINGRATE = 0.001
+LEARNINGRATE = 0.002
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
 # logdir= "testlog"
 # tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
@@ -40,14 +40,9 @@ for epoch in range(EPOCHS):
 
 """
 TODO
-make own log
 print model
 fix tensorboard log
-change the model
-customize train
-dubbel check if groups also take oponent pieces for the score
 also select the model for player 2, o this as option in env, stand is rand but can add versions of the model
 visualise model
 add passmove a scoor (-1,-1)
-use the model in the goclass
 """
