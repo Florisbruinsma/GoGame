@@ -1,6 +1,5 @@
 import selenium
 from selenium import webdriver
-
 """"
 TODO
 menu to restart go back a turn change ai

@@ -24,7 +24,7 @@ class A2CAgent:
                 env.render()
         return ep_reward
 
-    def train(self, env, max_steps=50, episodes=1000, info=False, info_step=25, winning_factor = 1.5, losing_factor = 0.75):
+    def train(self, env, max_steps=50, episodes=1000, info=False, info_step=25, winning_factor = 2, losing_factor = 0.5):
         done = False
         rewards, actions, values = np.empty((3, 0))
 
@@ -50,10 +50,18 @@ class A2CAgent:
                     episode_rewards.append(0.0)
                     if((env.scores[1]-env.scores[2]) > 0):
                         epoch_wins.append(1)
-                        rewards *= winning_factor
+                        for i in range(len(rewards)):
+                            if(rewards[i] > 0):
+                                rewards[i] *= winning_factor
+                            else:
+                                rewards[i] /= winning_factor
                     else:
                         epoch_wins.append(0)
-                        rewards *= losing_factor
+                        for i in range(len(rewards)):
+                            if(rewards[i] > 0):
+                                rewards[i] *= losing_factor
+                            else:
+                                rewards[i] /= losing_factor
                     next_obs = env.reset()
                     break
 
