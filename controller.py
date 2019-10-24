@@ -14,8 +14,8 @@ from tensorflow.keras import callbacks
 
 EPOCHS = 20
 EPISODES = 50
-BOARDSIZE = 5
-LEARNINGRATE = 0.002
+BOARDSIZE = 9
+LEARNINGRATE = 0.0002
 MAXTURNS = (BOARDSIZE*BOARDSIZE)-BOARDSIZE
 # logdir= "testlog"
 # tensorboard_callback = callbacks.TensorBoard(logdir, histogram_freq=1)
