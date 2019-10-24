@@ -70,6 +70,7 @@ class GoGame:
                 elif(board[row][col] == 2):
                     print('o',end='')
             print('')
+        print('')
 
     def revertBoard(self, turn):
         """
