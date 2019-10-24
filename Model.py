@@ -12,8 +12,8 @@ class Model(tf.keras.Model):
         self.callbacks = callbacks
         super().__init__('mlp_policy')
         # no tf.get_variable(), just simple Keras API
-        self.hidden1 = kl.Dense(2048, activation='relu')
-        self.hidden2 = kl.Dense(2048, activation='relu')
+        self.hidden1 = kl.Dense(1024, activation='relu')
+        self.hidden2 = kl.Dense(512, activation='relu')
         # self.hidden3 = kl.Dense(256, activation='relu')
         self.value = kl.Dense(1, name='value')
         # logits are unnormalized log probabilities
